@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"go.mau.fi/whatsmeow/store/sqlstore"
 	"os"
 	"strings"
 	"time"
+
+	"go.mau.fi/whatsmeow/store/sqlstore"
 
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/config"
 	domainApp "github.com/aldinokemal/go-whatsapp-web-multidevice/domains/app"
@@ -57,6 +58,7 @@ var rootCmd = &cobra.Command{
 	Short: "Send free whatsapp API",
 	Long: `This application is from clone https://github.com/aldinokemal/go-whatsapp-web-multidevice, 
 you can send whatsapp over http api but your whatsapp account have to be multi device version`,
+	Run: restServer,
 }
 
 func init() {

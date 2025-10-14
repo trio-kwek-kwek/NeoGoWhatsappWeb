@@ -21,17 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var restCmd = &cobra.Command{
-	Use:   "rest",
-	Short: "Send whatsapp API over http",
-	Long:  `This application is from clone https://github.com/aldinokemal/go-whatsapp-web-multidevice`,
-	Run:   restServer,
-}
-
-func init() {
-	rootCmd.AddCommand(restCmd)
-}
 func restServer(_ *cobra.Command, _ []string) {
 	engine := html.NewFileSystem(http.FS(EmbedIndex), ".html")
 	engine.AddFunc("isEnableBasicAuth", func(token any) bool {

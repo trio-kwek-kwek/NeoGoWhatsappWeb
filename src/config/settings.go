@@ -5,16 +5,13 @@ import (
 )
 
 var (
-	AppVersion             = "v7.7.0"
+	AppVersion             = "v4.18.0"
 	AppPort                = "3000"
 	AppDebug               = false
-	AppOs                  = "AldinoKemal"
+	AppOs                  = "NTE"
 	AppPlatform            = waCompanionReg.DeviceProps_PlatformType(1)
 	AppBasicAuthCredential []string
 	AppBasePath            = ""
-
-	McpPort = "8080"
-	McpHost = "localhost"
 
 	PathQrCode    = "statics/qrcode"
 	PathSendItems = "statics/senditems"
