@@ -22,8 +22,44 @@ func InitRestApp(app fiber.Router, service domainApp.IAppUsecase) App {
 	app.Get("/app/reconnect", rest.Reconnect)
 	app.Get("/app/devices", rest.Devices)
 	app.Get("/app/status", rest.ConnectionStatus)
+	app.Get("/app/presence/:presence", rest.Presence)
+	app.Get("/app/read-message/:message_id/:phone", rest.ReadMessage)
+	app.Get("/app/store/contact/:phone", rest.StoreContact)
 
 	return App{Service: service}
+}
+
+func (handler *App) Presence(c *fiber.Ctx) error {
+	err := handler.Service.Presence(c.UserContext(), c.Query("presence"))
+	utils.PanicIfNeeded(err)
+
+	return c.JSON(utils.ResponseData{
+		Status:  200,
+		Code:    "SUCCESS",
+		Message: "Change Presence success",
+	})
+}
+
+func (handler *App) ReadMessage(c *fiber.Ctx) error {
+	err := handler.Service.ReadMessage(c.UserContext(), c.Params("message_id"), c.Params("phone"))
+	utils.PanicIfNeeded(err)
+
+	return c.JSON(utils.ResponseData{
+		Status:  200,
+		Code:    "SUCCESS",
+		Message: "Read message success",
+	})
+}
+
+func (handler *App) StoreContact(c *fiber.Ctx) error {
+	err := handler.Service.StoreContact(c.UserContext(), c.Params("phone"))
+	utils.PanicIfNeeded(err)
+
+		return c.JSON(utils.ResponseData{
+			Status:  200,
+			Code:    "SUCCESS",
+		Message: "Store contact success",
+	})
 }
 
 func (handler *App) Login(c *fiber.Ctx) error {

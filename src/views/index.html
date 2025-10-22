@@ -21,7 +21,7 @@
 <body>
 <div id="splash-screen">
     <!-- Clean squircle logo without background wrapper -->
-    <img src="{{ .AppBasePath }}/assets/gowa.svg" alt="GoWA Logo" class="splash-icon" id="main-logo">
+    <img src="{{ .AppBasePath }}/assets/nte.png" alt="GoWA Logo" class="splash-icon" id="main-logo">
     
     <h2 class="splash-title">WhatsApp API</h2>
     <div class="ui active large inline loader splash-spinner"></div>
@@ -31,7 +31,7 @@
     <div class="main-header">
         <h1 class="ui header center aligned">
             <div class="title-container">
-                <img src="{{ .AppBasePath }}/assets/gowa.svg" alt="GoWA Logo">
+                <img src="{{ .AppBasePath }}/assets/nte.png" alt="GoWA Logo">
                 
                 <span>WhatsApp API</span>
                 
@@ -63,11 +63,11 @@
         <app-login-with-code :connected="connected_devices"></app-login-with-code>
     </div>
 
-    <div class="ui horizontal divider">
+    <!-- <div class="ui horizontal divider">
         Send
-    </div>
+    </div> -->
 
-    <div class="ui three column doubling grid cards">
+    <!-- <div class="ui three column doubling grid cards">
         <send-message></send-message>
         <send-image></send-image>
         <send-file max-file-size="{{ .MaxFileSize }}"></send-file>
@@ -84,21 +84,21 @@
         
         <send-chat-presence></send-chat-presence>
         <send-link></send-link>
-    </div>
+    </div> -->
 
-    <div class="ui horizontal divider">
+    <!-- <div class="ui horizontal divider">
         Message
-    </div>
+    </div> -->
 
-    <div class="ui three column doubling grid cards">
+    <!-- <div class="ui three column doubling grid cards">
         <message-delete></message-delete>
         <message-revoke></message-revoke>
         <message-react></message-react>
         <message-update></message-update>
         <message-read></message-read>
-    </div>
+    </div> -->
 
-    <div class="ui horizontal divider">
+    <!-- <div class="ui horizontal divider">
         Group
     </div>
 
@@ -115,15 +115,15 @@
         <group-set-topic></group-set-topic>
         <group-get-invite-link></group-get-invite-link>
         <group-info></group-info>
-    </div>
+    </div> -->
 
-    <div class="ui horizontal divider">
+    <!-- <div class="ui horizontal divider">
         Newsletter
     </div>
 
     <div class="ui three column doubling grid cards">
         <newsletter-list></newsletter-list>
-    </div>
+    </div> -->
 
     <div class="ui horizontal divider">
         Account
@@ -131,16 +131,16 @@
 
     <div class="ui three column doubling grid cards">
         <account-avatar></account-avatar>
-        <account-change-avatar></account-change-avatar>
-        <account-change-push-name></account-change-push-name>
+        <!-- <account-change-avatar></account-change-avatar> -->
+        <!-- <account-change-push-name></account-change-push-name> -->
         <account-user-info></account-user-info>
         <account-business-profile></account-business-profile>
         <account-privacy></account-privacy>
-        <account-contact></account-contact>
+        <!-- <account-contact></account-contact> -->
         <account-user-check></account-user-check>
     </div>
 
-    <div class="ui horizontal divider">
+    <!-- <div class="ui horizontal divider">
         Chat Management
     </div>
 
@@ -148,7 +148,7 @@
         <chat-pin-manager></chat-pin-manager>
         <chat-list></chat-list>
         <chat-messages></chat-messages>
-    </div>
+    </div> -->
 
 </div>
 <script>

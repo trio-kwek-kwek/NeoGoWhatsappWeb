@@ -12,6 +12,7 @@ import (
 	domainChatStorage "github.com/aldinokemal/go-whatsapp-web-multidevice/domains/chatstorage"
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/infrastructure/whatsapp"
 	pkgError "github.com/aldinokemal/go-whatsapp-web-multidevice/pkg/error"
+	"github.com/aldinokemal/go-whatsapp-web-multidevice/pkg/utils"
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/validations"
 	fiberUtils "github.com/gofiber/fiber/v2/utils"
 	_ "github.com/mattn/go-sqlite3"
@@ -19,6 +20,7 @@ import (
 	"github.com/skip2/go-qrcode"
 	"go.mau.fi/libsignal/logger"
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/types"
 )
 
 type serviceApp struct {
@@ -279,4 +281,42 @@ func (service *serviceApp) FetchDevices(ctx context.Context) (response []domainA
 	}
 
 	return response, nil
+}
+
+func (service serviceApp) Presence(ctx context.Context, presence string) (err error) {
+	if whatsapp.GetClient() == nil {
+		return pkgError.ErrWaCLI
+	}
+
+	responseNew, err := utils.ValidateJidWithLogin(whatsapp.GetClient(), "6288231322175@s.whatsapp.net")
+
+	if presence == "1" {
+		err = whatsapp.GetClient().SendChatPresence(responseNew, types.ChatPresenceComposing, types.ChatPresenceMediaText)
+	} else if presence == "2" {
+		err = whatsapp.GetClient().SendChatPresence(responseNew, types.ChatPresencePaused, types.ChatPresenceMediaText)
+	}
+
+	return err
+}
+
+func (service serviceApp) ReadMessage(ctx context.Context, messageID string, phone string) (err error) {
+	if whatsapp.GetClient() == nil {
+		return pkgError.ErrWaCLI
+	}
+
+	responseNew, err := utils.ValidateJidWithLogin(whatsapp.GetClient(), phone)
+	if err != nil {
+		return err
+	}
+
+	err = whatsapp.GetClient().MarkRead([]types.MessageID{messageID}, time.Now(), responseNew, types.EmptyJID, types.ReceiptTypeRead)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service serviceApp) StoreContact(ctx context.Context, phone string) (err error) {
+	return nil
 }

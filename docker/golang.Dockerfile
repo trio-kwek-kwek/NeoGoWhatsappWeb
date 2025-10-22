@@ -6,20 +6,21 @@ RUN apk update && apk add --no-cache gcc musl-dev gcompat
 WORKDIR /whatsapp
 COPY ./src .
 
+ENV GOCACHE=/root/.cache/go-build
 # Fetch dependencies.
-RUN go mod download
-# Build the binary with optimizations
-RUN go build -a -ldflags="-w -s" -o /app/whatsapp
+RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download
+# Build the binary.
+RUN --mount=type=cache,target="/root/.cache/go-build" go build -o /app/whatsapp
 
 #############################
 ## STEP 2 build a smaller image
 #############################
 FROM alpine:3.20
-RUN apk add --no-cache ffmpeg
+RUN apk update && apk add --no-cache ffmpeg
 WORKDIR /app
 # Copy compiled from builder.
 COPY --from=builder /app/whatsapp /app/whatsapp
+
+EXPOSE 3000
 # Run the binary.
 ENTRYPOINT ["/app/whatsapp"]
-
-CMD [ "rest" ]

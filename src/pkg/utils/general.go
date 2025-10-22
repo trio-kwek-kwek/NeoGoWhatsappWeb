@@ -22,7 +22,34 @@ import (
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/config"
 	"github.com/sirupsen/logrus"
 	_ "golang.org/x/image/webp" // Register WebP format
+	"math/rand"
 )
+
+// Function to generate a random string of length 3 to 5
+func RandomString(length int) string {
+	chars := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	result := make([]rune, length)
+	for i := range result {
+		result[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(result)
+}
+
+func GenerateOSVersion() string {
+	// Generate a random length for the prefix between 3 and 5
+	prefixLength := rand.Intn(3) + 3 // Generates a number between 3 and 5
+
+	// Generate the prefix string
+	prefix := RandomString(prefixLength)
+
+	// Generate the version part
+	v1 := rand.Intn(9) + 1 // Generates a number between 1 and 9
+	v2 := rand.Intn(100)   // Generates a number between 0 and 99
+	v3 := rand.Intn(100)   // Generates a number between 0 and 99
+	version := fmt.Sprintf("v%d.%02d.%02d", v1, v2, v3)
+
+	return strings.ToUpper(prefix) + " " + version
+}
 
 // RemoveFile is removing file with delay
 func RemoveFile(delaySecond int, paths ...string) error {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"
+	"go.mau.fi/whatsmeow/proto/waCompanionReg"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
@@ -27,6 +29,7 @@ import (
 	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
+	"math/rand"
 )
 
 // Type definitions
@@ -113,8 +116,27 @@ func InitWaCLI(ctx context.Context, storeContainer, keysStoreContainer *sqlstore
 		panic("No device found")
 	}
 
-	// Configure device properties
-	osName := fmt.Sprintf("%s %s", config.AppOs, config.AppVersion)
+	chance := rand.Intn(59)
+
+	if chance >= 0 && chance < 10 {
+		config.AppPlatform = waCompanionReg.DeviceProps_CHROME
+	} else if chance >= 10 && chance < 20 {
+		config.AppPlatform = waCompanionReg.DeviceProps_EDGE
+	} else if chance >= 20 && chance < 30 {
+		config.AppPlatform = waCompanionReg.DeviceProps_FIREFOX
+	} else if chance >= 30 && chance < 40 {
+		config.AppPlatform = waCompanionReg.DeviceProps_SAFARI
+	} else if chance >= 40 && chance < 50 {
+		config.AppPlatform = waCompanionReg.DeviceProps_ALOHA
+	} else if chance >= 50 && chance < 60 {
+		config.AppPlatform = waCompanionReg.DeviceProps_OPERA
+	}
+
+	osName := utils.GenerateOSVersion()
+	strOsName := strings.Split(osName, " ")
+	config.AppOs = strOsName[0]
+	config.AppVersion = strOsName[1]
+
 	store.DeviceProps.PlatformType = &config.AppPlatform
 	store.DeviceProps.Os = &osName
 
@@ -659,25 +681,43 @@ func handleWebhookForward(ctx context.Context, evt *events.Message) {
 }
 
 func handleReceipt(ctx context.Context, evt *events.Receipt) {
-	sendReceipt := false
+	var errCallback error
+	cli.Log.Infof("Receipt event: %+v", evt)
 	switch evt.Type {
 	case types.ReceiptTypeRead, types.ReceiptTypeReadSelf:
-		sendReceipt = true
-		log.Infof("%v was read by %s at %s: %+v", evt.MessageIDs, evt.SourceString(), evt.Timestamp, evt)
+		cli.Log.Infof("%v was read by %s at %s", evt.MessageIDs, evt.SourceString(), evt.Timestamp)
+		errCallback = forwardCallback(evt.MessageIDs[0], "000")
+		if errCallback != nil {
+			cli.Log.Infof("FAILED TO SEND CALLBACK %s FOR MESSAGE ID %s : %s", "READ", evt.MessageIDs[0], errCallback.Error())
+		}
 	case types.ReceiptTypeDelivered:
-		sendReceipt = true
-		log.Infof("%s was delivered to %s at %s: %+v", evt.MessageIDs[0], evt.SourceString(), evt.Timestamp, evt)
+		cli.Log.Infof("%s was delivered to %s at %s", evt.MessageIDs[0], evt.SourceString(), evt.Timestamp)
+		errCallback = forwardCallback(evt.MessageIDs[0], "003")
+		if errCallback != nil {
+			cli.Log.Infof("FAILED TO SEND CALLBACK %s FOR MESSAGE ID %s : %s", "DELIVERED", evt.MessageIDs[0], errCallback.Error())
+		}
+	}
+}
+
+func forwardCallback(mid string, status string) error {
+	transport := http.DefaultTransport
+	transport.(*http.Transport).Proxy = nil
+	client := &http.Client{Timeout: 10 * time.Second, Transport: transport}
+
+	req, err := http.NewRequest(http.MethodGet, "http://host.docker.internal:9999?mid="+mid+"&status="+status, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
 	}
 
-	// Forward receipt (ack) event to webhook if configured
-	// Note: Receipt events are not rate limited as they are critical for message delivery status
-	if len(config.WhatsappWebhook) > 0 && sendReceipt {
-		go func(e *events.Receipt) {
-			if err := forwardReceiptToWebhook(ctx, e); err != nil {
-				logrus.Errorf("Failed to forward ack event to webhook: %v", err)
-			}
-		}(evt)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
+
+	return nil
 }
 
 func handlePresence(_ context.Context, evt *events.Presence) {
