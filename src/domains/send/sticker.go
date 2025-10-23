@@ -6,4 +6,5 @@ type StickerRequest struct {
 	BaseRequest
 	Sticker    *multipart.FileHeader `json:"sticker" form:"sticker"`
 	StickerURL *string               `json:"sticker_url" form:"sticker_url"`
+	TraceCode string `json:"trace_code" form:"trace_code"`
 }

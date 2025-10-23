@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"math/rand"
 
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/config"
 	"github.com/aldinokemal/go-whatsapp-web-multidevice/domains/app"
@@ -159,12 +160,25 @@ func (service serviceSend) SendText(ctx context.Context, request domainSend.Mess
 		}
 	}
 
+	presenceErr := whatsapp.GetClient().SendChatPresence(dataWaRecipient, types.ChatPresenceComposing, types.ChatPresenceMediaText)
+	if presenceErr != nil {
+		return response, presenceErr
+	}
+
+	time.Sleep(time.Duration(rand.Intn(3)+1) * time.Second)
+
+	presenceErr = whatsapp.GetClient().SendChatPresence(dataWaRecipient, types.ChatPresencePaused, types.ChatPresenceMediaText)
+	if presenceErr != nil {
+		return response, presenceErr
+	}
+
 	ts, err := service.wrapSendMessage(ctx, dataWaRecipient, msg, request.Message)
 	if err != nil {
 		return response, err
 	}
 
 	response.MessageID = ts.ID
+	response.TraceCode = request.TraceCode
 	response.Status = fmt.Sprintf("Message sent to %s (server timestamp: %s)", request.Phone, ts.Timestamp.String())
 	return response, nil
 }
@@ -326,6 +340,7 @@ func (service serviceSend) SendImage(ctx context.Context, request domainSend.Ima
 		return response, err
 	}
 
+	response.TraceCode = request.TraceCode
 	response.MessageID = ts.ID
 	response.Status = fmt.Sprintf("Message sent to %s (server timestamp: %s)", request.BaseRequest.Phone, ts.Timestamp.String())
 	return response, nil
@@ -387,6 +402,7 @@ func (service serviceSend) SendFile(ctx context.Context, request domainSend.File
 		return response, err
 	}
 
+	response.TraceCode = request.TraceCode
 	response.MessageID = ts.ID
 	response.Status = fmt.Sprintf("Document sent to %s (server timestamp: %s)", request.BaseRequest.Phone, ts.Timestamp.String())
 	return response, nil
@@ -578,6 +594,7 @@ func (service serviceSend) SendVideo(ctx context.Context, request domainSend.Vid
 	}
 
 	response.MessageID = ts.ID
+	response.TraceCode = request.TraceCode
 	response.Status = fmt.Sprintf("Video sent to %s (server timestamp: %s)", request.BaseRequest.Phone, ts.Timestamp.String())
 	return response, nil
 }
@@ -696,6 +713,7 @@ func (service serviceSend) SendLink(ctx context.Context, request domainSend.Link
 	}
 
 	response.MessageID = ts.ID
+	response.TraceCode = request.TraceCode
 	response.Status = fmt.Sprintf("Link sent to %s (server timestamp: %s)", request.BaseRequest.Phone, ts.Timestamp.String())
 	return response, nil
 }
@@ -815,6 +833,7 @@ func (service serviceSend) SendAudio(ctx context.Context, request domainSend.Aud
 	}
 
 	response.MessageID = ts.ID
+	response.TraceCode = request.TraceCode
 	response.Status = fmt.Sprintf("Send audio success %s (server timestamp: %s)", request.BaseRequest.Phone, ts.Timestamp.String())
 	return response, nil
 }
@@ -1094,6 +1113,7 @@ func (service serviceSend) SendSticker(ctx context.Context, request domainSend.S
 	}
 
 	response.MessageID = ts.ID
+	response.TraceCode = request.TraceCode
 	response.Status = fmt.Sprintf("Sticker sent to %s (server timestamp: %s)", request.Phone, ts.Timestamp.String())
 	return response, nil
 }
